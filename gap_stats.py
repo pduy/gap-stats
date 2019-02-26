@@ -31,7 +31,6 @@ def compute_log_wk(data, clustering_func):
         data (ndarray): data to do clustering
         clustering_func (python function): np.ndarray -> list of cluster indices
 
-
     Returns:
         float: log of Wk statistic
     """
