@@ -179,6 +179,8 @@ def get_best_k(gaps, minimal_k=True):
             condition gap[k] >= gap[k - 1] - error[k - 1]. If False, find the
             number of k which maximizes the gap statistic.
 
+            True is prefer and is the default as we want to avoid overfitting.
+
     Returns:
         int: best number of clusters
     """
