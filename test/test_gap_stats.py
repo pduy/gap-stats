@@ -47,15 +47,11 @@ def test_generate_null_reference(simple_data):
     assert all(np.max(null_ref, axis=0) <= np.max(simple_data, axis=0))
 
 
-@pytest.mark.parametrize('n_features, n_centers', [
-    (2, 4),
-    (2, 6),
-    (3, 4),
-    (3, 6)
-])
+@pytest.mark.parametrize('n_features, n_centers', [(2, 4), (2, 6), (3, 4),
+                                                   (3, 6)])
 def test_get_best_k(generate_data, n_features, n_centers):
     x, y = generate_data(n_features, n_centers)
-    gaps = gap_stats.get_gaps(x, max_k=10, clustering_algorithm=KMeans, n_iters=100)
+    gaps = gap_stats.get_gaps(x, max_k=10, cluster_algo=KMeans, n_iters=100)
 
     best_k = gap_stats.get_best_k(gaps, minimal_k=True)
     assert best_k == n_centers
