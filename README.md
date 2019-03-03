@@ -26,13 +26,13 @@ Suppose we have a `data` matrix and would like to compute the gap statistics
 using K-Means for every `k` up to 10, with 100 iterations for each k:
 
 ```
-import gap_stats
+from gap_stats import GetGaps
 from sklearn.cluster import KMeans
 
-gaps = gap_stats.get_gaps_kmeans(data, max_k=10, n_iters=100)
+gaps = GetGaps(data, max_k=10, n_iters=100).kmeans()
 ```
 
-Each "gap" is a namedtuple GapStat(gap, error), where the two statistics are defined in the paper.
+Each "gap" is a namedtuple GapStat(gap, error), where the two statistics are defined in the original paper.
 
 And from the statistics (gaps and errors) we would like to find the best k:
 
@@ -47,6 +47,7 @@ If we don't want to use K-Means or GMM, we could still use our own favorite clus
 Here is an example of "AgglomerativeClustering"
 
 ```
+import gap_stats
 from sklearn.cluster import AgglomerativeClustering
 
 gaps = gap_stats.get_gaps(x, max_k=10, cluster_algo=AgglomerativeClustering,
