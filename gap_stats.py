@@ -11,12 +11,8 @@ particular dataset using the provided algorithm.
 There are 2 examples given: KMeans and Gaussian mixture model.
 """
 
-
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.mixture import GaussianMixture
 from collections import namedtuple
-
 
 GapStat = namedtuple('GapStat', 'gap error')
 
@@ -28,11 +24,11 @@ def compute_log_wk(data, clustering_func):
 
     Wk = pooled within-cluster sum of squares around the cluster means.
     Args:
-        data (ndarray): data to do clustering
-        clustering_func (python function): np.ndarray -> list of cluster indices
+        data (ndarray): data to do clustering.
+        clustering_func (python function): np.ndarray -> list of cluster indices.
 
     Returns:
-        float: log of Wk statistic
+        float: log of Wk statistic.
     """
     clusters = clustering_func(data)
 
@@ -67,13 +63,13 @@ def compute_reference_wk(data, n_iters, clustering_func):
     mean wk statistic for those reference datasets.
 
     Args:
-        data (np.ndarray): input data
-        n_iters (int): Number of reference datasets to be generated
-        clustering_func (function): np.ndarray -> list of cluster indices
+        data (np.ndarray): input data.
+        n_iters (int): Number of reference datasets to be generated.
+        clustering_func (function): np.ndarray -> list of cluster indices.
 
 
     Returns:
-        (float, float): mean and standard error of reference wk statistics
+        (float, float): mean and standard error of reference wk statistics.
     """
     ref_wks = [
         compute_log_wk(generate_null_reference(data), clustering_func)
@@ -86,7 +82,7 @@ def compute_reference_wk(data, n_iters, clustering_func):
 def get_gap(data, n_iters, clustering_func):
     """
     Compute (1) gap statistic of 1 particular clustering paradigm given by the
-    clustering_func
+    clustering_func.
 
     Args:
         data (np.ndarray): input data.
@@ -108,15 +104,15 @@ def get_gaps(data, max_k, cluster_algo, n_iters=10):
     0 to max_k.
 
     Args:
-        data (np.ndarray): input data
-        max_k (int): maximum number of clusters
-        cluster_algo (python function): an (possibly sklearn) clustering
+        data (np.ndarray): input data.
+        max_k (int): maximum number of clusters.
+        cluster_algo (python function): a (possibly sklearn) clustering
             function which takes `n_clusters` as parameter and must provide the
-            method fit_predict()
-        n_iters (int): number of iterations (number of references to generate)
+            method fit_predict().
+        n_iters (int): number of iterations (number of references to generate).
 
     Returns:
-        list: gap statistics for each value of k
+        list: gap statistics for each value of k.
     """
     if max_k > len(data):
         max_k = len(data)
@@ -126,46 +122,6 @@ def get_gaps(data, max_k, cluster_algo, n_iters=10):
                 cluster_algo(n_clusters=k).fit_predict)
         for k in range(1, max_k + 1)
     ]
-
-
-def get_gaps_kmeans(data, max_k, n_iters=10):
-    """Wrapper method, computing gap statistics for kmeans algorithm.
-    Could also be an example of how to use the method `get_gaps()` for an 
-    arbitrary clustering algorithm.
-
-    Args:
-        data (np.ndarray): input data
-        max_k (int): maximum number of clusters
-        n_iters (int): number of iterations (number of references to generate)
-
-    Returns:
-        list: gap statistics for each value of k
-    """
-    return get_gaps(
-        data, max_k=max_k, cluster_algo=KMeans, n_iters=n_iters)
-
-
-def get_gaps_gmm(data, max_k, n_iters=10):
-    """Wrapper method, computing gap statistics for Gaussian mixture model.
-    Could also be an example of how to use the method `get_gaps()` for an 
-    arbitrary clustering algorithm.
-
-    Args:
-        data (np.ndarray): input data
-        max_k (int): maximum number of clusters
-        n_iters (int): number of iterations (number of references to generate)
-
-    Returns:
-        list: gap statistics for each value of k
-    """
-
-    # Need to wrap by lambda because GaussianMixture requires n_components
-    # instead of n_clusters.
-    return get_gaps(
-        data,
-        max_k=max_k,
-        cluster_algo=lambda n_clusters: GaussianMixture(n_clusters),
-        n_iters=n_iters)
 
 
 def get_best_k(gaps, minimal_k=True):
@@ -193,3 +149,57 @@ def get_best_k(gaps, minimal_k=True):
         best_k = np.argmax([g.gap for g in gaps]) + 1
 
     return best_k
+
+
+class GetGaps(object):
+    """Wrapping class of the get_gaps() function for Kmeans and GMM"""
+
+    def __init__(self, data, max_k, n_iters):
+        self._data = data
+        self._max_k = max_k
+        self._n_iters = n_iters
+
+    def kmeans(self):
+        """Wrapper method, computing gap statistics for kmeans algorithm.
+        Could also be an example of how to use the method `get_gaps()` for an 
+        arbitrary clustering algorithm.
+
+        Args:
+            data (np.ndarray): input data
+            max_k (int): maximum number of clusters
+            n_iters (int): number of iterations (number of references to 
+                generate)
+
+        Returns:
+            list: gap statistics for each value of k
+        """
+        from sklearn.cluster import KMeans
+        return get_gaps(
+            self._data,
+            max_k=self._max_k,
+            cluster_algo=KMeans,
+            n_iters=self._n_iters)
+
+    def gmm(self):
+        """Wrapper method, computing gap statistics for Gaussian mixture model.
+        Could also be an example of how to use the method `get_gaps()` for an
+        arbitrary clustering algorithm.
+
+        Args:
+            data (np.ndarray): input data.
+            max_k (int): maximum number of clusters.
+            n_iters (int): number of iterations (number of references to
+                generate).
+
+        Returns:
+            list: gap statistics for each value of k.
+        """
+        from sklearn.mixture import GaussianMixture
+
+        # Need to wrap by lambda because GaussianMixture requires n_components
+        # instead of n_clusters.
+        return get_gaps(
+            self._data,
+            max_k=self._max_k,
+            cluster_algo=lambda n_clusters: GaussianMixture(n_clusters),
+            n_iters=self._n_iters)
